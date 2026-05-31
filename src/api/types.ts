@@ -116,13 +116,32 @@ export type ProvidersResponse = {
   default?: Record<string, string>;
 };
 
-// Bus event envelope from /event SSE
+// Bus event envelope from /event SSE.
+// Shapes verified against opencode v1.15.12.
+export type SessionStatus =
+  | { type: 'busy' }
+  | { type: 'idle' }
+  | { type: string };
+
 export type BusEvent =
-  | { type: 'server.connected' }
-  | { type: 'message.updated'; properties: { info: MessageInfo } }
-  | { type: 'message.part.updated'; properties: { part: Part; sessionID: string; messageID: string } }
+  | { type: 'server.connected'; properties?: Record<string, never> }
+  | { type: 'message.updated'; properties: { sessionID: string; info: MessageInfo } }
+  | {
+      type: 'message.part.updated';
+      properties: { sessionID: string; part: Part & { messageID?: string }; time?: number };
+    }
+  | {
+      type: 'message.part.delta';
+      properties: {
+        sessionID: string;
+        messageID: string;
+        partID: string;
+        field: string;
+        delta: string;
+      };
+    }
   | { type: 'message.removed'; properties: { sessionID: string; messageID: string } }
-  | { type: 'session.updated'; properties: { info: Session } }
-  | { type: 'session.deleted'; properties: { info: Session } }
-  | { type: 'session.idle'; properties: { sessionID: string } }
+  | { type: 'session.updated'; properties: { sessionID: string; info: Session } }
+  | { type: 'session.deleted'; properties: { sessionID: string; info: Session } }
+  | { type: 'session.status'; properties: { sessionID: string; status: SessionStatus } }
   | { type: string; properties?: Record<string, unknown> };

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import { Storage as SecureStore } from './secure-storage';
 
 // SecureStore keys (alphanumeric + . - _)
 const URL_KEY = 'opencode_server_url';
