@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "44620c4c-d8bf-478e-bffc-6d0c5639f6cc"
+      }
+    },
+    "owner": "pyriter.io"
   }
 }
