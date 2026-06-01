@@ -66,6 +66,7 @@ export default function SessionChatScreen() {
   const { data, isLoading, error } = useQuery({
     queryKey: key,
     queryFn: () => listMessages(sessionID),
+    enabled: hydrated && !!serverUrl,
   });
 
   const onEvent = useCallback(
@@ -182,7 +183,7 @@ export default function SessionChatScreen() {
           ref={listRef}
           data={data ?? []}
           keyExtractor={(m) => m.info.id}
-          contentContainerStyle={{ padding: spacing.md, gap: spacing.xs }}
+          contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.md }}
           renderItem={({ item }) => <MessageBubble message={item} />}
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
         />
@@ -205,5 +206,10 @@ export default function SessionChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
 });

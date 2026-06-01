@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing } from '@/theme';
+import { colors, fontSize, radius, spacing } from '@/theme';
 import type { Part } from '@/api/types';
 import { MarkdownView } from './MarkdownView';
 import { ToolCallBlock } from './ToolCallBlock';
@@ -32,7 +32,6 @@ export function PartRenderer({ part }: { part: Part }) {
       );
     }
     case 'step-start':
-      return <View style={styles.step} />;
     case 'step-finish':
       return null;
     default:
@@ -42,31 +41,37 @@ export function PartRenderer({ part }: { part: Part }) {
 
 const styles = StyleSheet.create({
   reasoning: {
-    backgroundColor: colors.bgInput,
-    borderRadius: 8,
-    padding: spacing.sm,
+    backgroundColor: colors.bgRaised,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     marginVertical: spacing.xs,
-    opacity: 0.85,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.borderAccent,
   },
   reasoningLabel: {
     color: colors.textFaint,
-    fontSize: 11,
+    fontSize: fontSize.xs,
+    letterSpacing: 0.4,
     textTransform: 'uppercase',
     marginBottom: 4,
+    fontWeight: '500',
   },
-  reasoningText: { color: colors.textMuted, fontSize: 13, fontStyle: 'italic' },
+  reasoningText: {
+    color: colors.textMuted,
+    fontSize: fontSize.base,
+    lineHeight: fontSize.base * 1.55,
+    fontStyle: 'italic',
+  },
   file: {
-    backgroundColor: colors.bgInput,
-    borderRadius: 6,
-    padding: spacing.sm,
+    backgroundColor: colors.bgRaised,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     marginVertical: spacing.xs,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  fileText: { color: colors.text, fontSize: 13 },
-  step: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing.sm,
-    opacity: 0.5,
-  },
+  fileText: { color: colors.text, fontSize: fontSize.base },
 });

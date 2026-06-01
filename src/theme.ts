@@ -1,21 +1,35 @@
 import { Platform } from 'react-native';
 
 export const colors = {
-  bg: '#0b0d10',
-  bgElevated: '#15181d',
-  bgInput: '#1a1e24',
-  border: '#262b33',
-  text: '#e6e9ef',
-  textMuted: '#8b94a3',
-  textFaint: '#5a6371',
+  // backgrounds
+  bg: '#0d1117',
+  bgElevated: '#161b22',
+  bgRaised: '#1d2330',
+  bgInput: '#1c2230',
+  bgUser: '#1a2436',
+  bgAssistant: '#171c25',
+  bgTool: '#161c27',
+  bgCode: '#0b1018',
+
+  // strokes
+  border: '#262d3a',
+  borderStrong: '#36405a',
+  borderAccent: '#3b4f7a',
+
+  // text
+  text: '#e8ecf3',
+  textSubtle: '#c5cbd7',
+  textMuted: '#8a93a6',
+  textFaint: '#5b6479',
+
+  // semantic
   accent: '#7aa2f7',
-  accentMuted: '#3d5a99',
+  accentSoft: '#3b5598',
+  user: '#7dcfff',
+  assistant: '#b4f9f8',
   success: '#9ece6a',
   warn: '#e0af68',
   error: '#f7768e',
-  user: '#1f2530',
-  assistant: '#15181d',
-  toolHeader: '#1d2230',
 };
 
 export const spacing = {
@@ -23,17 +37,44 @@ export const spacing = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 24,
-  xxl: 32,
+  xl: 20,
+  xxl: 28,
+  xxxl: 40,
 };
 
 export const radius = {
   sm: 6,
   md: 10,
-  lg: 16,
+  lg: 14,
+  xl: 18,
 };
 
 export const font = {
-  mono: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }) as string,
-  body: Platform.select({ ios: 'System', android: 'sans-serif', default: 'System' }) as string,
+  mono: Platform.select({
+    ios: 'Menlo',
+    android: 'monospace',
+    default: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+  }) as string,
+  body: Platform.select({
+    ios: 'System',
+    android: 'sans-serif',
+    default: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+  }) as string,
+};
+
+export const fontSize = {
+  xs: 11,
+  sm: 12,
+  base: 14,
+  md: 16,
+  lg: 18,
+  xl: 22,
+  xxl: 28,
+};
+
+export const fontWeight = {
+  regular: '400' as const,
+  medium: '500' as const,
+  semibold: '600' as const,
+  bold: '700' as const,
 };

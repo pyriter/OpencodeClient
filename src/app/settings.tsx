@@ -14,7 +14,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSettings } from '@/state/settings';
 import { probeConnection, ApiError } from '@/api/client';
-import { colors, font, radius, spacing } from '@/theme';
+import { colors, font, fontSize, radius, spacing } from '@/theme';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -59,38 +59,49 @@ export default function SettingsScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.wrap}>
-        <Text style={styles.label}>Server URL</Text>
-        <TextInput
-          value={url}
-          onChangeText={setUrl}
-          placeholder="http://host.tail-scale.ts.net:4096"
-          placeholderTextColor={colors.textFaint}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          style={styles.input}
-        />
-        <Text style={styles.hint}>
-          The opencode server's Tailscale URL. Default port is 4096.
-        </Text>
+        <View style={styles.intro}>
+          <Text style={styles.title}>Connect to opencode</Text>
+          <Text style={styles.subtitle}>
+            Point the app at your opencode server and we'll save the credentials in the device keychain.
+          </Text>
+        </View>
 
-        <Text style={[styles.label, { marginTop: spacing.lg }]}>
-          Server password (OPENCODE_SERVER_PASSWORD)
-        </Text>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="optional"
-          placeholderTextColor={colors.textFaint}
-          autoCapitalize="none"
-          autoCorrect={false}
-          secureTextEntry
-          style={styles.input}
-        />
-        <Text style={styles.hint}>Leave blank if the server has no password.</Text>
+        <View style={styles.field}>
+          <Text style={styles.label}>Server URL</Text>
+          <TextInput
+            value={url}
+            onChangeText={setUrl}
+            placeholder="http://host.tail-scale.ts.net:4096"
+            placeholderTextColor={colors.textFaint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            style={styles.input}
+          />
+          <Text style={styles.hint}>Default opencode port is 4096.</Text>
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Server password</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="OPENCODE_SERVER_PASSWORD"
+            placeholderTextColor={colors.textFaint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
+            style={styles.input}
+          />
+          <Text style={styles.hint}>Leave blank if the server has no password.</Text>
+        </View>
 
         <Pressable style={[styles.btn, busy && styles.btnDisabled]} onPress={save} disabled={busy}>
-          {busy ? <ActivityIndicator color={colors.text} /> : <Text style={styles.btnText}>Test & save</Text>}
+          {busy ? (
+            <ActivityIndicator color={colors.bg} />
+          ) : (
+            <Text style={styles.btnText}>Test & save</Text>
+          )}
         </Pressable>
 
         {!!current.serverUrl && (
@@ -99,7 +110,6 @@ export default function SettingsScreen() {
           </Pressable>
         )}
 
-        <View style={{ height: spacing.xxl }} />
         <Text style={styles.footer}>
           Make sure your device is signed into the same Tailnet as the opencode server.
         </Text>
@@ -109,27 +119,45 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: spacing.md, gap: spacing.xs },
-  label: { color: colors.textMuted, fontSize: 12, textTransform: 'uppercase' },
+  wrap: { padding: spacing.lg, paddingTop: spacing.md, gap: spacing.lg },
+  intro: { gap: spacing.xs, marginBottom: spacing.sm },
+  title: { color: colors.text, fontSize: fontSize.xl, fontWeight: '600' },
+  subtitle: { color: colors.textMuted, fontSize: fontSize.base, lineHeight: fontSize.base * 1.5 },
+  field: { gap: spacing.xs },
+  label: {
+    color: colors.textSubtle,
+    fontSize: fontSize.sm,
+    fontWeight: '500',
+    letterSpacing: 0.2,
+  },
   input: {
     backgroundColor: colors.bgInput,
     color: colors.text,
     borderRadius: radius.md,
-    padding: spacing.sm,
-    fontSize: 15,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    fontSize: fontSize.md,
     fontFamily: font.mono,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  hint: { color: colors.textFaint, fontSize: 12, marginTop: 4 },
+  hint: { color: colors.textFaint, fontSize: fontSize.sm, marginTop: 2 },
   btn: {
-    marginTop: spacing.xl,
+    marginTop: spacing.sm,
     backgroundColor: colors.accent,
-    borderRadius: radius.md,
-    padding: spacing.md,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.md + 2,
     alignItems: 'center',
   },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: colors.text, fontWeight: '600', fontSize: 15 },
-  linkBtn: { marginTop: spacing.md, alignItems: 'center', padding: spacing.sm },
-  linkText: { color: colors.error },
-  footer: { color: colors.textFaint, fontSize: 12, textAlign: 'center' },
+  btnText: { color: colors.bg, fontWeight: '600', fontSize: fontSize.md },
+  linkBtn: { alignSelf: 'center', padding: spacing.sm },
+  linkText: { color: colors.error, fontSize: fontSize.base },
+  footer: {
+    color: colors.textFaint,
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+    marginTop: spacing.lg,
+    lineHeight: fontSize.sm * 1.55,
+  },
 });

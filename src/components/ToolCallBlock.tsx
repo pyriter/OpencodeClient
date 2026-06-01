@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, font, radius, spacing } from '@/theme';
+import { colors, font, fontSize, radius, spacing } from '@/theme';
 import type { ToolPart } from '@/api/types';
 
-function previewInput(tool: string, input: unknown): string {
+function previewInput(input: unknown): string {
   if (input == null) return '';
   if (typeof input === 'string') return input;
   if (typeof input === 'object') {
     const i = input as Record<string, unknown>;
-    // Common opencode tool input shapes
     if (typeof i.command === 'string') return i.command;
     if (typeof i.filePath === 'string') return i.filePath;
     if (typeof i.path === 'string') return i.path;
     if (typeof i.pattern === 'string') return i.pattern;
     try {
-      return JSON.stringify(i);
+      return JSON.stringify(i, null, 2);
     } catch {
       return String(input);
     }
@@ -28,7 +27,7 @@ export function ToolCallBlock({ part }: { part: ToolPart }) {
   const input = part.state?.input;
   const output = part.state?.output ?? '';
   const error = part.state?.error;
-  const title = part.state?.title ?? part.tool;
+  const title = part.state?.title ?? '';
 
   const statusColor =
     status === 'completed'
@@ -44,9 +43,11 @@ export function ToolCallBlock({ part }: { part: ToolPart }) {
       <Pressable onPress={() => setOpen((v) => !v)} style={styles.header}>
         <View style={[styles.dot, { backgroundColor: statusColor }]} />
         <Text style={styles.tool}>{part.tool}</Text>
-        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-          {title}
-        </Text>
+        {!!title && (
+          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+            {title}
+          </Text>
+        )}
         <Text style={styles.chev}>{open ? '▾' : '▸'}</Text>
       </Pressable>
       {open && (
@@ -55,7 +56,7 @@ export function ToolCallBlock({ part }: { part: ToolPart }) {
             <>
               <Text style={styles.section}>input</Text>
               <Text style={styles.code} selectable>
-                {previewInput(part.tool, input)}
+                {previewInput(input)}
               </Text>
             </>
           )}
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   wrap: {
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.toolHeader,
+    backgroundColor: colors.bgTool,
     borderRadius: radius.md,
     marginVertical: spacing.xs,
     overflow: 'hidden',
@@ -93,26 +94,57 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
     gap: spacing.sm,
   },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  tool: { color: colors.text, fontFamily: font.mono, fontSize: 13 },
-  title: { color: colors.textMuted, fontSize: 13, flex: 1 },
-  chev: { color: colors.textMuted },
-  body: {
-    paddingHorizontal: spacing.sm,
-    paddingBottom: spacing.sm,
-    gap: spacing.xs,
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
-  section: { color: colors.textFaint, fontSize: 11, textTransform: 'uppercase', marginTop: spacing.xs },
+  tool: {
+    color: colors.user,
+    fontFamily: font.mono,
+    fontSize: fontSize.base,
+    fontWeight: '500',
+  },
+  title: {
+    color: colors.textMuted,
+    fontSize: fontSize.base,
+    flex: 1,
+  },
+  chev: {
+    color: colors.textFaint,
+    fontSize: fontSize.md,
+    marginLeft: 'auto',
+  },
+  body: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    paddingTop: 0,
+    gap: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: 2,
+  },
+  section: {
+    color: colors.textFaint,
+    fontSize: fontSize.xs,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginTop: spacing.sm,
+    fontWeight: '500',
+  },
   code: {
     color: colors.text,
     fontFamily: font.mono,
-    fontSize: 12,
-    backgroundColor: colors.bg,
-    padding: spacing.sm,
+    fontSize: fontSize.sm,
+    lineHeight: fontSize.sm * 1.55,
+    backgroundColor: colors.bgCode,
+    padding: spacing.md,
     borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 });

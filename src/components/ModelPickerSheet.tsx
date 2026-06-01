@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { colors, font, radius, spacing } from '@/theme';
+import { colors, font, fontSize, radius, spacing } from '@/theme';
 import { listProviders } from '@/api/sessions';
 import type { ModelRef } from '@/api/types';
 
@@ -52,16 +52,23 @@ export function ModelPickerSheet({ visible, current, onClose, onPick }: Props) {
                   return (
                     <Pressable
                       key={m.id}
-                      style={[styles.model, isCurrent && styles.modelCurrent]}
+                      style={({ pressed }) => [
+                        styles.model,
+                        isCurrent && styles.modelCurrent,
+                        pressed && styles.modelPressed,
+                      ]}
                       onPress={() => {
                         onPick({ providerID: p.id, modelID: m.id });
                         onClose();
                       }}
                     >
-                      <Text style={styles.modelId}>{m.id}</Text>
-                      {!!m.name && m.name !== m.id && (
-                        <Text style={styles.modelName}>{m.name}</Text>
-                      )}
+                      <View style={styles.modelTextWrap}>
+                        <Text style={styles.modelId}>{m.id}</Text>
+                        {!!m.name && m.name !== m.id && (
+                          <Text style={styles.modelName}>{m.name}</Text>
+                        )}
+                      </View>
+                      {isCurrent && <Text style={styles.check}>✓</Text>}
                     </Pressable>
                   );
                 })}
@@ -78,11 +85,13 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.bgElevated,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     maxHeight: '80%',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   handle: {
     width: 40,
@@ -90,26 +99,49 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
-  title: { color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: spacing.sm },
+  title: {
+    color: colors.text,
+    fontSize: fontSize.lg,
+    fontWeight: '600',
+    marginBottom: spacing.md,
+  },
   scroll: { flexGrow: 0 },
   center: { padding: spacing.lg, alignItems: 'center' },
-  error: { color: colors.error, padding: spacing.sm },
-  providerBlock: { marginBottom: spacing.md },
+  error: { color: colors.error, padding: spacing.sm, fontSize: fontSize.base },
+  providerBlock: { marginBottom: spacing.lg },
   providerLabel: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: fontSize.xs,
+    fontWeight: '500',
+    letterSpacing: 0.4,
     textTransform: 'uppercase',
     marginBottom: spacing.xs,
   },
   model: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
-    backgroundColor: colors.bgInput,
-    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.bgRaised,
+    marginBottom: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  modelCurrent: { borderWidth: 1, borderColor: colors.accent },
-  modelId: { color: colors.text, fontFamily: font.mono, fontSize: 13 },
-  modelName: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
+  modelCurrent: { borderColor: colors.accent, backgroundColor: colors.bgUser },
+  modelPressed: { backgroundColor: colors.bgInput },
+  modelTextWrap: { flex: 1 },
+  modelId: {
+    color: colors.text,
+    fontFamily: font.mono,
+    fontSize: fontSize.base,
+    fontWeight: '500',
+  },
+  modelName: {
+    color: colors.textMuted,
+    fontSize: fontSize.sm,
+    marginTop: 2,
+  },
+  check: { color: colors.accent, fontSize: fontSize.md, fontWeight: '600' },
 });
