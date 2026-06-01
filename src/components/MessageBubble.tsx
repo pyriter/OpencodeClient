@@ -16,6 +16,7 @@ export function MessageBubble({ message }: { message: Message }) {
           <PartRenderer
             key={(p as { id?: string }).id ?? `${message.info.id}-${i}`}
             part={p}
+            messageInfo={message.info}
           />
         ))}
         {message.info.error?.message && (

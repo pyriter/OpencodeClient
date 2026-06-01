@@ -10,3 +10,8 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Dev hatch: expose for browser-console inspection and tests.
+if (__DEV__ && typeof globalThis !== 'undefined') {
+  (globalThis as unknown as { __qc?: QueryClient }).__qc = queryClient;
+}

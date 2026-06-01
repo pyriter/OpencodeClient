@@ -30,6 +30,7 @@ export type ReasoningPart = {
   id?: string;
   type: 'reasoning';
   text: string;
+  time?: { start?: number; end?: number };
 };
 
 export type ToolPart = {
