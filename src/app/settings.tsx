@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,6 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSettings } from '@/state/settings';
 import { probeConnection, ApiError } from '@/api/client';
+import { notify } from '@/lib/dialogs';
 import { colors, font, fontSize, radius, spacing } from '@/theme';
 
 export default function SettingsScreen() {
@@ -26,7 +26,7 @@ export default function SettingsScreen() {
   const save = async () => {
     const cleaned = url.trim().replace(/\/+$/, '');
     if (!cleaned) {
-      Alert.alert('Server URL required');
+      notify('Server URL required');
       return;
     }
     setBusy(true);
@@ -41,7 +41,7 @@ export default function SettingsScreen() {
           : e instanceof Error
             ? e.message
             : 'Connection failed';
-      Alert.alert('Connection failed', msg);
+      notify('Connection failed', msg);
     } finally {
       setBusy(false);
     }
@@ -111,8 +111,15 @@ export default function SettingsScreen() {
         )}
 
         <Text style={styles.footer}>
-          Make sure your device is signed into the same Tailnet as the opencode server.
+          Make sure your device can reach the opencode server (same Wi-Fi, VPN, or tunnel).
         </Text>
+
+        <Pressable
+          style={styles.walkthroughBtn}
+          onPress={() => router.push('/onboarding')}
+        >
+          <Text style={styles.walkthroughText}>View setup walkthrough →</Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -160,4 +167,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     lineHeight: fontSize.sm * 1.55,
   },
+  walkthroughBtn: {
+    alignSelf: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  walkthroughText: { color: colors.accent, fontSize: fontSize.base },
 });

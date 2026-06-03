@@ -1,18 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { confirm, notify } from '@/lib/dialogs';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   abortSession,
+  createSession,
+  deleteSession,
   listMessages,
   promptAsync,
 } from '@/api/sessions';
@@ -22,7 +26,8 @@ import { useSettings } from '@/state/settings';
 import { MessageBubble } from '@/components/MessageBubble';
 import { Composer } from '@/components/Composer';
 import { ModelPickerSheet } from '@/components/ModelPickerSheet';
-import { colors, spacing } from '@/theme';
+import { ThinkingIndicator } from '@/components/ThinkingIndicator';
+import { colors, fontSize, spacing } from '@/theme';
 
 type MessagesKey = ['messages', string];
 
@@ -52,8 +57,26 @@ function applyDelta(
   return { ...msg, parts: next };
 }
 
+// True when the assistant is still working and hasn't produced any visible
+// output yet (no text, no reasoning, no tool calls). That's the moment to
+// show the "Thinking…" indicator.
+function shouldShowThinking(busy: boolean, messages: Message[]): boolean {
+  if (!busy) return false;
+  if (messages.length === 0) return true;
+  const last = messages[messages.length - 1];
+  if (last.info.role === 'user') return true;
+  const visible = last.parts.some(
+    (p) =>
+      (p.type === 'text' && ((p as { text?: string }).text ?? '').trim().length > 0) ||
+      p.type === 'reasoning' ||
+      p.type === 'tool',
+  );
+  return !visible;
+}
+
 export default function SessionChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const sessionID = String(id);
   const qc = useQueryClient();
   const { lastModel, setLastModel, hydrated, serverUrl } = useSettings();
@@ -149,7 +172,7 @@ export default function SessionChatScreen() {
       });
     } catch (e) {
       setBusy(false);
-      Alert.alert('Send failed', (e as Error).message);
+      notify('Send failed', (e as Error).message);
     }
   };
 
@@ -157,19 +180,56 @@ export default function SessionChatScreen() {
     try {
       await abortSession(sessionID);
     } catch (e) {
-      Alert.alert('Abort failed', (e as Error).message);
+      notify('Abort failed', (e as Error).message);
     } finally {
       setBusy(false);
     }
   };
 
+  // "Clear conversation": opencode has no bulk-clear endpoint, so we delete
+  // the current session and drop the user into a fresh one in its place.
+  const clearConversation = () => {
+    confirm(
+      'Clear conversation?',
+      'This deletes the current session and starts a fresh one.',
+      async () => {
+        try {
+          if (busy) await abortSession(sessionID).catch(() => undefined);
+          await deleteSession(sessionID);
+          const fresh = await createSession({});
+          qc.invalidateQueries({ queryKey: ['sessions'] });
+          router.replace(`/sessions/${encodeURIComponent(fresh.id)}`);
+        } catch (e) {
+          notify('Clear failed', (e as Error).message);
+        }
+      },
+      { destructive: true, confirmLabel: 'Clear' },
+    );
+  };
+
+  const messages = data ?? [];
+  const showThinking = shouldShowThinking(busy, messages);
+  const insets = useSafeAreaInsets();
+  // Default expo-router stack header is ~44pt; add the top safe-area inset
+  // so KeyboardAvoidingView pushes the composer to the exact keyboard top.
+  const kavOffset = Platform.OS === 'ios' ? insets.top + 44 : 0;
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.bg }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={kavOffset}
     >
-      <Stack.Screen options={{ title: data?.[0]?.info?.sessionID ? sessionID.slice(0, 8) : 'Session' }} />
+      <Stack.Screen
+        options={{
+          title: sessionID.slice(0, 8),
+          headerRight: () => (
+            <Pressable onPress={clearConversation} hitSlop={8} style={styles.headerBtnWrap}>
+              <Text style={styles.headerBtn}>clear</Text>
+            </Pressable>
+          ),
+        }}
+      />
       {isLoading ? (
         <View style={styles.center}>
           <ActivityIndicator color={colors.accent} />
@@ -181,11 +241,18 @@ export default function SessionChatScreen() {
       ) : (
         <FlatList
           ref={listRef}
-          data={data ?? []}
+          data={messages}
           keyExtractor={(m) => m.info.id}
-          contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.md }}
+          contentContainerStyle={{
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.sm,
+            paddingBottom: spacing.md,
+          }}
           renderItem={({ item }) => <MessageBubble message={item} />}
+          ListFooterComponent={showThinking ? <ThinkingIndicator /> : null}
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
         />
       )}
       <Composer
@@ -212,4 +279,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.lg,
   },
+  headerBtnWrap: { paddingHorizontal: spacing.sm },
+  headerBtn: { color: colors.accent, fontSize: fontSize.base },
 });

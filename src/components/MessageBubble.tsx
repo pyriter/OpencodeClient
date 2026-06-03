@@ -5,13 +5,28 @@ import type { Message } from '@/api/types';
 
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.info.role === 'user';
-  return (
-    <View style={styles.row}>
-      <View style={styles.roleRow}>
-        <View style={[styles.dot, { backgroundColor: isUser ? colors.user : colors.assistant }]} />
-        <Text style={styles.role}>{isUser ? 'you' : 'opencode'}</Text>
+
+  if (isUser) {
+    // User: right-aligned bubble (Claude-style)
+    const text = message.parts
+      .map((p) => (p.type === 'text' ? (p as { text?: string }).text ?? '' : ''))
+      .join('')
+      .trim();
+    return (
+      <View style={styles.userRow}>
+        <View style={styles.userBubble}>
+          <Text style={styles.userText} selectable>
+            {text}
+          </Text>
+        </View>
       </View>
-      <View style={[styles.bubble, isUser ? styles.userBubble : styles.assistantBubble]}>
+    );
+  }
+
+  // Assistant: no bubble, plain text on the page with a subtle role accent.
+  return (
+    <View style={styles.assistantRow}>
+      <View style={styles.assistantContent}>
         {message.parts.map((p, i) => (
           <PartRenderer
             key={(p as { id?: string }).id ?? `${message.info.id}-${i}`}
@@ -28,42 +43,28 @@ export function MessageBubble({ message }: { message: Message }) {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    marginVertical: spacing.sm,
-    gap: spacing.xs,
-  },
-  roleRow: {
+  userRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginLeft: spacing.xs,
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-  },
-  role: {
-    color: colors.textMuted,
-    fontSize: fontSize.xs,
-    letterSpacing: 0.4,
-    textTransform: 'lowercase',
-    fontWeight: '500',
-  },
-  bubble: {
-    borderRadius: radius.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderWidth: 1,
-    gap: spacing.xs,
+    justifyContent: 'flex-end',
+    marginVertical: spacing.sm,
   },
   userBubble: {
+    maxWidth: '85%',
     backgroundColor: colors.bgUser,
-    borderColor: colors.borderAccent,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
   },
-  assistantBubble: {
-    backgroundColor: colors.bgAssistant,
-    borderColor: colors.border,
+  userText: {
+    color: colors.text,
+    fontSize: fontSize.md,
+    lineHeight: fontSize.md * 1.5,
+  },
+  assistantRow: {
+    marginVertical: spacing.sm,
+  },
+  assistantContent: {
+    gap: spacing.xs,
   },
   error: {
     color: colors.error,

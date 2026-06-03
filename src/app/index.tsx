@@ -12,5 +12,5 @@ export default function Index() {
       </View>
     );
   }
-  return <Redirect href={serverUrl ? '/sessions' : '/settings'} />;
+  return <Redirect href={serverUrl ? '/sessions' : '/onboarding'} />;
 }
